@@ -1,0 +1,43 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Получение кода
+      uses: actions/checkout@v3
+
+    - name: Установка PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, bcmath, pdo, sqlite, dom, fileinfo
+        coverage: none
+
+    - name: Установка зависимостей Composer
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Копирование .env
+      run: cp .env.example .env
+
+    - name: Генерация ключа приложения
+      run: php artisan key:generate
+
+    - name: Создание базы данных SQLite
+      run: |
+        mkdir -p database
+        touch database/database.sqlite
+
+    - name: Запуск миграций
+      run: php artisan migrate --force
+
+    - name: Запуск тестов
+      run: php artisan test
+'@ | Out-File -FilePath .github/workflows/ci.yml -Encoding UTF8 -Force
